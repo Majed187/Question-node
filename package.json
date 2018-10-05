@@ -1,0 +1,22 @@
+{
+  "name": "node-qustion",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "majed shrendan",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "eslint": "^5.6.1",
+    "express": "^4.16.3",
+    "lowdb": "^1.0.0",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "watch": "nodemon --inspect server.js --ignore data/",
+    "debug": "node --inspect server.js"
+  }
+}
