@@ -29,7 +29,19 @@ async function getQuestion(db, req, res) {
 	const data = db.get('questions').value();
 	res.json(data);
 }
+async function addQuestion(db, req, res) {
+	const data = await db
+		.get('questions')
+		.push({
+			question: req.body.question,
+			answer: req.body.answer,
+			id: uuid()
+		})
+		.write();
 
-router.get('/questions', withDB(questionJSON, getQuestion), readWriteErrors);
+	res.json(data);
+}
+router.get('/questions', withDB(questionJSON, getQuestion));
 
+router.post('/questions', withDB(questionJSON, addQuestion));
 module.exports = router;
