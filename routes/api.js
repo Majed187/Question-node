@@ -41,7 +41,20 @@ async function addQuestion(db, req, res) {
 
 	res.json(data);
 }
-router.get('/questions', withDB(questionJSON, getQuestion));
 
+async function updateQuestion(db, req, res) {
+	const { id } = req.params;
+	const data = await db
+		.get('questions')
+		.splice(id, 1, {
+			question: req.body.question,
+			answer: req.body.answer,
+			id: uuid()
+		})
+		.write();
+	res.json(data);
+}
+router.get('/questions', withDB(questionJSON, getQuestion));
+router.put('/questions/:id', withDB(questionJSON, updateQuestion));
 router.post('/questions', withDB(questionJSON, addQuestion));
 module.exports = router;
