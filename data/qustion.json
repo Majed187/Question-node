@@ -1,0 +1,25 @@
+{
+  "questions": [
+    {
+      "question": "Can fish fly?",
+      "answer": "Yes"
+    },
+    {
+      "question": "Can chickens swim?",
+      "answer": "No"
+    },
+    {
+      "question": "what is your name ",
+      "answer": "wgwgqw",
+      "id": "406eac70-c7f5-11e8-a000-43ebb4d81aae"
+    },
+    {
+      "question": "Is Pablo Escobar still alive?",
+      "answer": "No"
+    },
+    {
+      "question": "Are JavaScript and the Java the same programming language?",
+      "answer": "no"
+    }
+  ]
+}
