@@ -54,7 +54,21 @@ async function updateQuestion(db, req, res) {
 		.write();
 	res.json(data);
 }
+async function deleteQuestion(db, req, res) {
+	const { id } = req.params;
+
+	const data = await db
+		.get('questions')
+		.splice(id, 1)
+		.write();
+	res.json(data);
+}
 router.get('/questions', withDB(questionJSON, getQuestion));
 router.put('/questions/:id', withDB(questionJSON, updateQuestion));
 router.post('/questions', withDB(questionJSON, addQuestion));
+router.delete(
+	'/questions/:id',
+	withDB(questionJSON, deleteQuestion),
+	readWriteErrors
+);
 module.exports = router;
