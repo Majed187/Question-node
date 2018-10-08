@@ -21,12 +21,8 @@ function readWriteErrors(err, req, res, next) {
 	newErr.status = 500;
 	next(newErr);
 }
-
 async function getQuestion(db, req, res) {
-	if (!db.has('questions').value()) {
-		await db.set('questions', []).write();
-	}
-	const data = db.get('questions').value();
+	const data = await db.get('questions').value();
 	res.json(data);
 }
 async function addQuestion(db, req, res) {
@@ -38,31 +34,48 @@ async function addQuestion(db, req, res) {
 			id: uuid()
 		})
 		.write();
-
+	console.log(req.body);
 	res.json(data);
 }
 
-async function updateQuestion(db, req, res) {
+async function updateQuestion(db, req, res, next) {
 	const { id } = req.params;
+	const question = db.get(`qusestions[${id}]`).value;
+
+	if (!db.has(question).value()) {
+		const err = new Error(`No such question with id ${id}`);
+		err.status = 404;
+
+		return next(err);
+	}
+
 	const data = await db
 		.get('questions')
 		.splice(id, 1, {
 			question: req.body.question,
-			answer: req.body.answer,
-			id: uuid()
+			answer: req.body.answer
 		})
 		.write();
+
 	res.json(data);
 }
-async function deleteQuestion(db, req, res) {
+async function deleteQuestion(db, req, res, next) {
 	const { id } = req.params;
+	const question = db.get(`questions[${id}]`).value;
 
+	if (!db.has(question).value()) {
+		const err = new Error(`No such question with id ${id}`);
+		err.status = 404;
+		return next(err);
+	}
 	const data = await db
 		.get('questions')
 		.splice(id, 1)
 		.write();
+
 	res.json(data);
 }
+
 router.get('/questions', withDB(questionJSON, getQuestion));
 router.put('/questions/:id', withDB(questionJSON, updateQuestion));
 router.post('/questions', withDB(questionJSON, addQuestion));
