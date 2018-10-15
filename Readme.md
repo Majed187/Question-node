@@ -1,6 +1,6 @@
 # Node-Question
 
-## small project to add and update delete from json file
+## small project to get, add, update and delete data from json file
 
 ## How to start
 
