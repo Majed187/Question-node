@@ -7,25 +7,39 @@ const questionJSON = path.join(__dirname, '..', 'data', 'qustion.json');
 router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 
-function readWriteErrors(err, req, res, next) {
-	const newErr = new Error();
-
-	switch (err.code) {
-	case 'ENOENT':
-		newErr.message = `Cannot read file: ${err.path}`;
-		break;
-	default:
-		newErr.message = 'Internal server error';
-	}
-
-	newErr.status = 500;
-	next(newErr);
-}
-async function getQuestion(db, req, res) {
+async function getQuestions(db, req, res) {
 	const data = await db.get('questions').value();
 	res.json(data);
 }
+
+async function getQuestion(db, req, res) {
+	console.log();
+	const { id } = req.params;
+
+	const data = db
+		.get('questions')
+		.find({ id })
+		.value();
+
+	if (!data) {
+		res.status(404).json({
+			status: 404,
+			message: `the question with the given id :${id} is not exsist`
+		});
+	}
+
+	res.json(data);
+}
+
 async function addQuestion(db, req, res) {
+	if (!req.body.question || !req.body.answer) {
+		const err = new Error();
+		err.status = 400;
+		res.json({
+			status: err.status,
+			message: err.message
+		});
+	}
 	const data = await db
 		.get('questions')
 		.push({
@@ -34,54 +48,62 @@ async function addQuestion(db, req, res) {
 			id: uuid()
 		})
 		.write();
-	console.log(req.body);
-	res.json(data);
+	return res.json(data[data.length - 1]);
 }
 
 async function updateQuestion(db, req, res, next) {
 	const { id } = req.params;
-	const question = db.get(`qusestions[${id}]`).value;
-
-	if (!db.has(question).value()) {
-		const err = new Error(`No such question with id ${id}`);
-		err.status = 404;
-
-		return next(err);
+	const question = db
+		.get('questions')
+		.find({ id })
+		.value();
+	if (!question) {
+		const err = new Error();
+		res.status(404).json({
+			status: 404,
+			message: `No such question with id ${id}`
+		});
+		next(err);
 	}
 
 	const data = await db
 		.get('questions')
-		.splice(id, 1, {
+		.find(question)
+		.assign({
 			question: req.body.question,
 			answer: req.body.answer
 		})
 		.write();
-
 	res.json(data);
 }
+
 async function deleteQuestion(db, req, res, next) {
 	const { id } = req.params;
-	const question = db.get(`questions[${id}]`).value;
+	const question = db
+		.get('questions')
+		.find({ id })
+		.value();
 
-	if (!db.has(question).value()) {
-		const err = new Error(`No such question with id ${id}`);
-		err.status = 404;
+	if (!question) {
+		const err = new Error();
+		res.status(404).json({
+			status: 404,
+			message: `No such question with id ${id}`
+		});
 		return next(err);
 	}
-	const data = await db
+	await db
 		.get('questions')
-		.splice(id, 1)
+		.remove(question)
 		.write();
 
-	res.json(data);
+	res.json(question);
 }
 
-router.get('/questions', withDB(questionJSON, getQuestion));
+router.get('/questions', withDB(questionJSON, getQuestions));
+router.get('/questions/:id', withDB(questionJSON, getQuestion));
 router.put('/questions/:id', withDB(questionJSON, updateQuestion));
 router.post('/questions', withDB(questionJSON, addQuestion));
-router.delete(
-	'/questions/:id',
-	withDB(questionJSON, deleteQuestion),
-	readWriteErrors
-);
+router.delete('/questions/:id', withDB(questionJSON, deleteQuestion));
+
 module.exports = router;
